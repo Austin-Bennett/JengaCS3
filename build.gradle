@@ -7,7 +7,7 @@ application {
 }
 
 def lwjglVersion = '3.3.3'
-def lwjglNatives = 'natives-windows' // change to natives-macos or natives-linux if needed
+def lwjglNatives = 'natives-linux' // change to natives-macos or natives-linux if needed
 
 repositories {
     mavenCentral()
