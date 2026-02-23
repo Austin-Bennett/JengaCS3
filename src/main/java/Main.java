@@ -11,6 +11,12 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
+
+
+/*
+* NOTE:
+* if running this, you must go into build.gradle and set lwjglNatives to natives-windows
+* */
 public class Main {
 
     private long window;

@@ -2,13 +2,15 @@ package game.utils;
 
 import org.joml.Vector3f;
 
+import static game.utils.FloatUtils.flteq;
+
 
 /*
 * An AABB implementation
 * AABB's are super nice because its easy to calculate collision with them
 *
 * */
-public class BoundingBox implements Cloneable {
+public final class BoundingBox implements Cloneable {
     //x, y, z, width, height, depth
     float x = 0, y = 0, z = 0, w = 0, h = 0, d = 0;
 
@@ -97,6 +99,10 @@ public class BoundingBox implements Cloneable {
         return new Vector3f(right(), top(), z);
     }
 
+    public Vector3f bottomLeftBack() {
+        return new Vector3f(x, y, back());
+    }
+
     public Vector3f bottomRightBack() {
         return new Vector3f(right(), y, back());
     }
@@ -136,7 +142,7 @@ public class BoundingBox implements Cloneable {
         if (top() < other.y) return false; //totally below
         if (y > other.top()) return false; //totally above
         if (back() < other.z) return false; //totally behind
-        if (z < other.back()) return false; //totally in front
+        if (z > other.back()) return false; //totally in front
 
         return true;
     }
@@ -189,5 +195,19 @@ public class BoundingBox implements Cloneable {
             //do nothing
             return null;
         }
+    }
+
+    public boolean equals(BoundingBox obj) {
+        return flteq(x, obj.x) &&
+                flteq(y, obj.y) &&
+                flteq(z, obj.y) &&
+                flteq(w, obj.y) &&
+                flteq(h, obj.y) &&
+                flteq(d, obj.y);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("[%.2f * %.2f * %.2f] (%.2f, %.2f, %.2f)", w, h, d, x, y, z);
     }
 }

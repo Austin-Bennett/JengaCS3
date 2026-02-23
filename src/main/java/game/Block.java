@@ -7,7 +7,7 @@ import physics.PhysicsObject;
 public class Block extends PhysicsObject {
 
     public static final float BLOCK_MASS = 1.0f; //set this to a good number for mass, or leave as is to tweak later
-    public static final BoundingBox BASE_DIMENSIONS = new BoundingBox(0, 0, 0); //set the dimensions here
+    public static final BoundingBox BASE_DIMENSIONS = new BoundingBox(3, 1, 1); //set the dimensions here
 
     public Block() {
         super( BASE_DIMENSIONS.clone(), BLOCK_MASS );
