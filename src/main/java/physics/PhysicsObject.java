@@ -31,7 +31,7 @@ public abstract class PhysicsObject extends GameObject {
 
 
     public void updatePhysics(double deltaTime) {
-        //update all physics in here (add velocity to position, acceleration to velocity, reset velocity)
+        //update all physics in here (add velocity to position, acceleration to velocity, set acceleration to 0)
         //note that all updates should be applied with respect to delta time, in other words,
         //multiply everything by deltaTime
     }

@@ -147,7 +147,7 @@ public final class BoundingBox implements Cloneable {
         return true;
     }
 
-    public RayCollisionInfo intersectsRay(Vector3f start, @Normalized Vector3f dir) {
+    public RayHitInfo intersectsRay(Vector3f start, @Normalized Vector3f dir) {
         // For each axis, compute t at the near and far face
         float tMinX = (x       - start.x) / dir.x;
         float tMaxX = (right() - start.x) / dir.x;
@@ -173,13 +173,13 @@ public final class BoundingBox implements Cloneable {
         var hit = tEnter <= tExit && tExit >= 0 && tEnter >= 0;
         if (hit) {
             Vector3f pos = new Vector3f(start).add(new Vector3f(dir).mul(tEnter));
-            return new RayCollisionInfo(
+            return new RayHitInfo(
                     true, //hit
                     tEnter, //distance
                     pos //position
             );
         } else {
-            return new RayCollisionInfo(
+            return new RayHitInfo(
                     false, //hit
                     -1, //distance
                     null //position
