@@ -34,6 +34,7 @@ public abstract class PhysicsObject extends GameObject {
         //update all physics in here (add velocity to position, acceleration to velocity, set acceleration to 0)
         //note that all updates should be applied with respect to delta time, in other words,
         //multiply everything by deltaTime
+            //i destroyed everything
     }
 
     @Override
