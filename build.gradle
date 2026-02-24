@@ -6,23 +6,13 @@ application {
     mainClass = 'Main'
 }
 
-def lwjglVersion = '3.3.3'
 def lwjglNatives = 'natives-linux' // change to natives-macos or natives-linux if needed
 
 repositories {
-    mavenCentral()
+    mavenCentral() // Add this
 }
 
 dependencies {
-    implementation platform("org.lwjgl:lwjgl-bom:${lwjglVersion}")
-
-    implementation 'org.lwjgl:lwjgl'
-    implementation 'org.lwjgl:lwjgl-opengl'
-    implementation 'org.lwjgl:lwjgl-glfw'
-
-    implementation 'org.joml:joml:1.10.7'
-
-    runtimeOnly "org.lwjgl:lwjgl::${lwjglNatives}"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::${lwjglNatives}"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::${lwjglNatives}"
+    // This replaces the need for the manual JAR file
+    implementation fileTree(dir: 'lib', include: ['*.jar'])
 }
