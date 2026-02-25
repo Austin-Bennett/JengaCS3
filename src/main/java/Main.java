@@ -25,7 +25,6 @@ public class Main {
     }
 
     Main() {
-        game = new JengaGame();
     }
 
     private void run() {
@@ -49,15 +48,17 @@ public class Main {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
 
         // Create the window
-        game.window = glfwCreateWindow(800, 600, "Hello World!", NULL, NULL);
+        game = new JengaGame(
+                glfwCreateWindow(800, 600, "Hello World!", NULL, NULL)
+        );
+
+
+
         if ( game.window == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(game.window, (window, key, scancode, action, mods) -> {
-            if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
-                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
-        });
+        glfwSetKeyCallback(game.window, JengaGame::keyCallback);
 
         // Get the thread stack and push a new frame
         try ( MemoryStack stack = stackPush() ) {
