@@ -5,6 +5,7 @@ import game.Graphics.ShaderProgram;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryStack;
 
+import java.io.IOException;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 
@@ -15,6 +16,9 @@ public class JengaGame {
     public final long window;
     public static final int NUMKEYS = 350;
 
+
+    public static final int WINDOW_WIDTH = 800;
+    public static final int WINDOW_HEIGHT = 600;
 
 
     //input key state
@@ -51,33 +55,59 @@ public class JengaGame {
         this.window = window;
     }
 
-    public void run() {
+    public void run() throws IOException {
+        float[] vertices = {
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f,
+                0.0f,  0.5f, 0.0f
+        };
+
+        int VAO = glGenVertexArrays();
+        int VBO = glGenBuffers();
+
+        //bind the vao
+        glBindVertexArray(VAO);
+
+        //create vbo
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+
+        //set vertex attributes
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * Float.BYTES, 0);
+        glEnableVertexAttribArray(0);
 
 
+        //create shader
+        ShaderProgram program;
+        {
+            Shader vert = Shader.fromFile(GL_VERTEX_SHADER, "src/main/resources/main.vert");
+            Shader frag = Shader.fromFile(GL_FRAGMENT_SHADER, "src/main/resources/main.frag");
+
+            program = new ShaderProgram(vert, frag);
+        }
+
+        program.setUniform("ourColor", 1, 0, 1, 1);
 
 
-        //main loop
         //set clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
 
-            if (isDown(GLFW_KEY_0)) {
-                System.out.println("KEY 0 down");
-            }
+            //draw
+            program.use();
+            glBindVertexArray(VAO);
+            //draw triangle
+            glDrawArrays(GL_TRIANGLES, 0, 3);
 
 
-            //display the new frame and poll events
+            //window loop end
             glfwSwapBuffers(window);
-
-            //update our input (store keyset in previous)
-            updateInput();
-
-            //tell GLFW to update the window input
             glfwPollEvents();
         }
     }
+
 
     private void updateInput() {
         System.arraycopy(keyset, 0, previous, 0, NUMKEYS);
