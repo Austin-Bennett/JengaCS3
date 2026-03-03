@@ -6,83 +6,80 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
+import java.util.HashMap;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL43.*;
 
 public class JengaGame {
-    public long window;
-
-    public static final String vertexShader =
-            "#version 330 core\n" +
-            "layout (location = 0) in vec3 aPos;\n" +
-            "void main() {\n" +
-            "    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n" +
-            "}";
-
-    public static final String fragShader =
-            "#version 330 core\n" +
-            "out vec4 FragColor;\n" +
-            "void main() {\n" +
-            "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n" +
-            "}";
+    public final long window;
+    public static final int NUMKEYS = 350;
 
 
 
-    public JengaGame() {
+    //input key state
+    private static final boolean[] keyset = new boolean[NUMKEYS];
+    private static final boolean[] previous = new boolean[NUMKEYS];
+
+    public static void keyCallback(long window, int key, int scancode, int action, int mods) {
+        keyset[key] = action == GLFW_PRESS;
+    }
+
+    public static boolean isPressed(int key) {
+        if (key < 0 || key >= NUMKEYS) return false;
+        return keyset[key] && !previous[key];
+    }
+
+    public static boolean isReleased(int key) {
+        if (key < 0 || key >= NUMKEYS) return false;
+        return !keyset[key] && previous[key];
+    }
+
+    public static boolean isDown(int key) {
+        if (key < 0 || key >= NUMKEYS) return false;
+        return keyset[key];
+    }
+
+    public static boolean isUp(int key) {
+        if (key < 0 || key >= NUMKEYS) return false;
+        return !keyset[key];
+    }
+
+
+
+    public JengaGame(long window) {
+        this.window = window;
     }
 
     public void run() {
 
-        float[] vertices = {
-            -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            0.0f,  0.5f, 0.0f
-        };
-
-        int VAO = glGenVertexArrays();
-        int VBO = glGenBuffers();
-
-        //bind the vao
-        glBindVertexArray(VAO);
-
-        //create vbo
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
-
-        //set vertex attributes
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * Float.BYTES, 0);
-        glEnableVertexAttribArray(0);
-
-
-        //create shader
-        ShaderProgram program;
-        {
-            Shader vert = new Shader(GL_VERTEX_SHADER, vertexShader);
-            Shader frag = new Shader(GL_FRAGMENT_SHADER, fragShader);
-
-            program = new ShaderProgram(vert, frag);
-        }
 
 
 
-
+        //main loop
         //set clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
 
-            //draw
-            program.use();
-            glBindVertexArray(VAO);
-            //draw triangle
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+            if (isDown(GLFW_KEY_0)) {
+                System.out.println("KEY 0 down");
+            }
 
 
-            //window loop end
+            //display the new frame and poll events
             glfwSwapBuffers(window);
+
+            //update our input (store keyset in previous)
+            updateInput();
+
+            //tell GLFW to update the window input
             glfwPollEvents();
         }
+    }
+
+    private void updateInput() {
+        System.arraycopy(keyset, 0, previous, 0, NUMKEYS);
     }
 }
