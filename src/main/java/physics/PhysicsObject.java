@@ -33,8 +33,10 @@ public abstract class PhysicsObject extends GameObject {
     public void updatePhysics(double deltaTime) {
         //update all physics in here (add velocity to position, acceleration to velocity, set acceleration to 0)
         //note that all updates should be applied with respect to delta time, in other words,
-        //multiply everything by deltaTime
-            //i destroyed everything
+        //multiply everything by deltaTime+
+        addPosition(new Vector3f(this.velocity).mul((float)deltaTime));
+        velocity.add(acceleration).mul((float)deltaTime);
+        acceleration.mul(0);
     }
 
     @Override
@@ -70,17 +72,23 @@ public abstract class PhysicsObject extends GameObject {
         * let d = v • u
         * this.acceleration.multiply(d)
         * */
+        Vector3f v =new Vector3f();
+        v=this.getPosition().sub(other.getPosition());
+        Vector3f u=this.acceleration;
+        float d=v.dot(u);
+        this.acceleration.mul(d);
     }
 
     public void applyForce(Vector3f force) {
         //use F = Ma to calculate applied acceleration
+        this.addAcceleration(force.div(this.mass));
     }
 
     public void addVelocity(Vector3f v) {
-
+        this.velocity.add(v);
     }
 
     public void addAcceleration(Vector3f a) {
-
+        this.acceleration.add(a);
     }
 }
