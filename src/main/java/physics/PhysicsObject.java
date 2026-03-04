@@ -33,7 +33,10 @@ public abstract class PhysicsObject extends GameObject {
     public void updatePhysics(double deltaTime) {
         //update all physics in here (add velocity to position, acceleration to velocity, set acceleration to 0)
         //note that all updates should be applied with respect to delta time, in other words,
-        //multiply everything by deltaTime
+        //multiply everything by deltaTime+
+        addPosition(new Vector3f(this.velocity).mul((float)deltaTime));
+        velocity.add(acceleration).mul((float)deltaTime);
+        acceleration.mul(0);
     }
 
     @Override
@@ -42,44 +45,50 @@ public abstract class PhysicsObject extends GameObject {
         //in order to stop colliding
         //i think you will find dot products very useful here
         /*
-        * DOT PRODUCTS TUTORIAL
-        * =====================
-        * given 2 vectors v and u,
-        * v • u = v.x * u.x + v.y * u.y + v.z * u.z
-        * geometric definition:
-        * v • u = v.length() * u.length() * cos(θ), where θ is the angle between the vectors
-        *
-        * so in other words, the dot product is proportional to the amount which one vector points
-        * to another vector because of the cos(θ)
-        * EXAMPLE:
-        * ===========
-        * if θ is very small (i.e the 2 vectors point in the same direction) cos(θ) ≈ 1
-        * if θ is close to 90 degrees, (i.e the 2 vectors are perpendicular, cos(θ) ≈ 0
-        * if θ is close to 180 degrees, (i.e the 2 vectors are facing opposite to each other) cos(θ) ≈ -1
-        *
-        * so the idea is simple: calculate the dot product between the direction from the center of this object
-        * to the center of other (normalized)
-        * and the net acceleration on this object (normalized)
-        * then multiply the net acceleration by this number to get the normal force applied
-        *
-        * in other words,
-        *
-        * let v = this.position() - other.position()
-        * let u = this.acceleration
-        * let d = v • u
-        * this.acceleration.multiply(d)
-        * */
+         * DOT PRODUCTS TUTORIAL
+         * =====================
+         * given 2 vectors v and u,
+         * v • u = v.x * u.x + v.y * u.y + v.z * u.z
+         * geometric definition:
+         * v • u = v.length() * u.length() * cos(θ), where θ is the angle between the vectors
+         *
+         * so in other words, the dot product is proportional to the amount which one vector points
+         * to another vector because of the cos(θ)
+         * EXAMPLE:
+         * ===========
+         * if θ is very small (i.e the 2 vectors point in the same direction) cos(θ) ≈ 1
+         * if θ is close to 90 degrees, (i.e the 2 vectors are perpendicular, cos(θ) ≈ 0
+         * if θ is close to 180 degrees, (i.e the 2 vectors are facing opposite to each other) cos(θ) ≈ -1
+         *
+         * so the idea is simple: calculate the dot product between the direction from the center of this object
+         * to the center of other (normalized)
+         * and the net acceleration on this object (normalized)
+         * then multiply the net acceleration by this number to get the normal force applied
+         *
+         * in other words,
+         *
+         * let v = this.position() - other.position()
+         * let u = this.acceleration
+         * let d = v • u
+         * this.acceleration.multiply(d)
+         * */
+        Vector3f v =new Vector3f();
+        v=this.getPosition().sub(other.getPosition());
+        Vector3f u=this.acceleration;
+        float d=v.dot(u);
+        this.acceleration.mul(d);
     }
 
     public void applyForce(Vector3f force) {
         //use F = Ma to calculate applied acceleration
+        this.addAcceleration(force.div(this.mass));
     }
 
     public void addVelocity(Vector3f v) {
-
+        this.velocity.add(v);
     }
 
     public void addAcceleration(Vector3f a) {
-
+        this.acceleration.add(a);
     }
 }
