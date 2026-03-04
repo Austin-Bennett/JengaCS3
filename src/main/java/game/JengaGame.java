@@ -5,39 +5,61 @@ import game.Graphics.ShaderProgram;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryStack;
 
+import java.io.IOException;
 import java.nio.IntBuffer;
+import java.util.HashMap;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL43.*;
 
 public class JengaGame {
-    public long window;
-
-    public static final String vertexShader =
-            "#version 330 core\n" +
-            "layout (location = 0) in vec3 aPos;\n" +
-            "void main() {\n" +
-            "    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n" +
-            "}";
-
-    public static final String fragShader =
-            "#version 330 core\n" +
-            "out vec4 FragColor;\n" +
-            "void main() {\n" +
-            "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n" +
-            "}";
+    public final long window;
+    public static final int NUMKEYS = 350;
 
 
+    public static final int WINDOW_WIDTH = 800;
+    public static final int WINDOW_HEIGHT = 600;
 
-    public JengaGame() {
+
+    //input key state
+    private static final boolean[] keyset = new boolean[NUMKEYS];
+    private static final boolean[] previous = new boolean[NUMKEYS];
+
+    public static void keyCallback(long window, int key, int scancode, int action, int mods) {
+        keyset[key] = action == GLFW_PRESS;
     }
 
-    public void run() {
+    public static boolean isPressed(int key) {
+        if (key < 0 || key >= NUMKEYS) return false;
+        return keyset[key] && !previous[key];
+    }
 
+    public static boolean isReleased(int key) {
+        if (key < 0 || key >= NUMKEYS) return false;
+        return !keyset[key] && previous[key];
+    }
+
+    public static boolean isDown(int key) {
+        if (key < 0 || key >= NUMKEYS) return false;
+        return keyset[key];
+    }
+
+    public static boolean isUp(int key) {
+        if (key < 0 || key >= NUMKEYS) return false;
+        return !keyset[key];
+    }
+
+
+
+    public JengaGame(long window) {
+        this.window = window;
+    }
+
+    public void run() throws IOException {
         float[] vertices = {
-            -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            0.0f,  0.5f, 0.0f
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f,
+                0.0f,  0.5f, 0.0f
         };
 
         int VAO = glGenVertexArrays();
@@ -58,13 +80,13 @@ public class JengaGame {
         //create shader
         ShaderProgram program;
         {
-            Shader vert = new Shader(GL_VERTEX_SHADER, vertexShader);
-            Shader frag = new Shader(GL_FRAGMENT_SHADER, fragShader);
+            Shader vert = Shader.fromFile(GL_VERTEX_SHADER, "src/main/resources/main.vert");
+            Shader frag = Shader.fromFile(GL_FRAGMENT_SHADER, "src/main/resources/main.frag");
 
             program = new ShaderProgram(vert, frag);
         }
 
-
+        program.setUniform("ourColor", 1, 0, 1, 1);
 
 
         //set clear color
@@ -84,5 +106,10 @@ public class JengaGame {
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
+    }
+
+
+    private void updateInput() {
+        System.arraycopy(keyset, 0, previous, 0, NUMKEYS);
     }
 }
