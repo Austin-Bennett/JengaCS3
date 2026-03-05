@@ -1,6 +1,7 @@
 package game.Graphics;
 
 import game.utils.Destructible;
+import org.joml.Matrix4f;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL43.*;
@@ -8,6 +9,7 @@ import static org.lwjgl.opengl.GL43.*;
 public class ShaderProgram extends Destructible implements GLObject {
 
     private final int id;
+    public static final float[] mat4v = new float[16];
 
     public ShaderProgram(Shader... shaders) {
         id = glCreateProgram();
@@ -23,6 +25,14 @@ public class ShaderProgram extends Destructible implements GLObject {
         }
     }
 
+    public int getUniformLoc(String name) {
+        return glGetUniformLocation(id, name);
+    }
+
+    public void setUniformMatrix(int loc, Matrix4f mat) {
+        glUniformMatrix4fv(loc, false, mat.get(mat4v));
+    }
+
     public void use() {
         glUseProgram(id);
     }
@@ -34,6 +44,6 @@ public class ShaderProgram extends Destructible implements GLObject {
 
     @Override
     public void destruct() {
-
+        glDeleteProgram(id);
     }
 }

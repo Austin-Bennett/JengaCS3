@@ -1,8 +1,6 @@
 package game.Graphics;
 
 import game.utils.Destructible;
-
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
