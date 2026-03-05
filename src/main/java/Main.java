@@ -3,6 +3,7 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.*;
 
+import java.io.IOException;
 import java.nio.*;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -20,14 +21,14 @@ public class Main {
     //private long window;
     private JengaGame game;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         new Main().run();
     }
 
     Main() {
     }
 
-    private void run() {
+    private void run() throws IOException {
         init();
 
         game.run();
@@ -49,7 +50,7 @@ public class Main {
 
         // Create the window
         game = new JengaGame(
-                glfwCreateWindow(800, 600, "Hello World!", NULL, NULL)
+                glfwCreateWindow(800, 600, "JENGA", NULL, NULL)
         );
 
 
