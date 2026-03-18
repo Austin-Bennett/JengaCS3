@@ -1,4 +1,4 @@
-package game.Graphics;
+package game.graphics;
 
 public interface GLObject {
 

@@ -1,6 +1,7 @@
 package physics;
 
 import game.GameObject;
+import game.graphics.Model;
 import game.utils.BoundingBox;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -13,16 +14,16 @@ public abstract class PhysicsObject extends GameObject {
     Vector3f velocity;
     Vector3f acceleration;
 
-    public PhysicsObject(BoundingBox collision, float mass) {
-        super(collision);
+    public PhysicsObject(BoundingBox collision, float mass, Model m) {
+        super(collision, m);
         velocity = new Vector3f();
         acceleration = new Vector3f();
         this.mass = mass;
     }
 
 
-    public PhysicsObject(BoundingBox collision, float mass, Vector3f velocity, Vector3f acceleration) {
-        super(collision);
+    public PhysicsObject(BoundingBox collision, float mass, Vector3f velocity, Vector3f acceleration, Model m) {
+        super(collision, m);
 
         this.velocity = velocity;
         this.acceleration = acceleration;

@@ -1,4 +1,4 @@
-package game.Graphics;
+package game.graphics;
 
 import game.utils.FloatUtils;
 import org.joml.Matrix4f;

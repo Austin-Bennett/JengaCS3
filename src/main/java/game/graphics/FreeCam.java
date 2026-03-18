@@ -1,8 +1,7 @@
-package game.Graphics;
+package game.graphics;
 
 import game.JengaGame;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL43.*;
 
 public class FreeCam extends PerspectiveCamera {
     public float speed = 1f;

@@ -1,14 +1,14 @@
-package game.Graphics;
+package game.graphics;
 
 import game.utils.Destructible;
+import game.utils.Transform;
 import org.joml.Matrix4f;
 
-import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL43.*;
 
 public class Model extends Destructible {
 
-    private Matrix4f model = new Matrix4f().identity();
+    public Transform transform = new Transform();
     private VertexBuffer vertices;
     private int VBO;
     private int EBO;
@@ -38,7 +38,7 @@ public class Model extends Destructible {
     }
 
     public Matrix4f getMatrix() {
-        return model;
+        return transform.getMatrix();
     }
 
     @Override

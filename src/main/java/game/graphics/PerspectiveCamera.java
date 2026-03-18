@@ -1,4 +1,4 @@
-package game.Graphics;
+package game.graphics;
 
 import game.JengaGame;
 import org.joml.Matrix4f;

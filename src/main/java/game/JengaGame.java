@@ -1,8 +1,9 @@
 package game;
 
-import game.Graphics.*;
+import game.graphics.*;
 import game.utils.StopWatch;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import java.io.IOException;
 
@@ -19,6 +20,9 @@ public class JengaGame {
     //input key state
     private static final boolean[] keyset = new boolean[NUMKEYS];
     private static final boolean[] previous = new boolean[NUMKEYS];
+
+
+    public JengaBoard board = new JengaBoard();
 
     public static void keyCallback(long window, int key, int scancode, int action, int mods) {
         keyset[key] = action == GLFW_PRESS;
@@ -55,20 +59,10 @@ public class JengaGame {
         Matrix4f norm = new Matrix4f();
 
         Model m = new Model(
-            new VertexBuffer(
-                new float[]{
-                        //position         normal         uv
-                         0.5f,  1f, 0.5f,    0f, 0f, 0f,   0f, 0f,    // top right
-                         0.5f, 1f, -0.5f,    0f, 0f, 0f,   0f, 0f,    // bottom right
-                        -0.5f, 1f, -0.5f,    0f, 0f, 0f,   0f, 0f,    // bottom left
-                        -0.5f,  1f, 0.5f,    0f, 0f, 0f,   0f, 0f,    // top left
-                },
-                new int[]{
-                    0, 1, 3,   // first triangle
-                    1, 2, 3    // second triangle
-                }
-            )
+            VertexBuffer.makeCube(1)
         );
+        m.transform.scale(new Vector3f(1, 2, 1));
+
 
         FreeCam camera = new FreeCam();
 
@@ -101,7 +95,6 @@ public class JengaGame {
 
             program.use();
             program.setUniformMatrix(model_l, m.getMatrix());
-            program.setUniformMatrix(normal_l, norm.identity().mul(m.getMatrix()).invert().transpose());
             program.setUniformMatrix(view_l, camera.getView());
             program.setUniformMatrix(projection_l, camera.getProjection());
 

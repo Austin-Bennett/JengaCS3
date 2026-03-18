@@ -1,5 +1,7 @@
 package game.utils;
 
+import game.graphics.Model;
+import game.graphics.VertexBuffer;
 import org.joml.Vector3f;
 
 import static game.utils.FloatUtils.flteq;
@@ -204,6 +206,16 @@ public final class BoundingBox implements Cloneable {
                 flteq(w, obj.y) &&
                 flteq(h, obj.y) &&
                 flteq(d, obj.y);
+    }
+
+    public Model intoBox() {
+
+        var res = new Model(
+                VertexBuffer.makeCube(1)
+        );
+
+        res.transform.scale(new Vector3f(w / 2, d / 2, h / 2));
+        return res;
     }
 
     @Override

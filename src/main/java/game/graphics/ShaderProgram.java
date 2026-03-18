@@ -1,9 +1,8 @@
-package game.Graphics;
+package game.graphics;
 
 import game.utils.Destructible;
 import org.joml.Matrix4f;
 
-import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL43.*;
 
 public class ShaderProgram extends Destructible implements GLObject {

@@ -1,6 +1,7 @@
 import game.JengaGame;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.*;
 
 import java.io.IOException;
@@ -90,5 +91,7 @@ public class Main {
 
 
         GL.createCapabilities();
+
+        GL43.glEnable(GL43.GL_DEPTH_TEST);
     }
 }
