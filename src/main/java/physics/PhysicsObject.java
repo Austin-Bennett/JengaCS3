@@ -14,6 +14,12 @@ public abstract class PhysicsObject extends GameObject {
     Vector3f velocity;
     Vector3f acceleration;
 
+    public boolean simulate_physics = true;
+
+    public float g = -9.8f;
+
+    public float damp = 0.9f;
+
     public PhysicsObject(BoundingBox collision, float mass, Model m) {
         super(collision, m);
         velocity = new Vector3f();
@@ -32,52 +38,53 @@ public abstract class PhysicsObject extends GameObject {
 
 
     public void updatePhysics(double deltaTime) {
-        //update all physics in here (add velocity to position, acceleration to velocity, set acceleration to 0)
-        //note that all updates should be applied with respect to delta time, in other words,
-        //multiply everything by deltaTime+
-        addPosition(new Vector3f(this.velocity).mul((float)deltaTime));
-        velocity.add(acceleration).mul((float)deltaTime);
-        acceleration.mul(0);
+        float dt = (float) deltaTime;
+
+        if (this.simulate_physics) {
+            this.acceleration.z += g;
+            this.velocity.add(acceleration.x * dt, acceleration.y * dt, acceleration.z * dt);
+            acceleration.set(0);
+
+            // Don't move yet — let checkCollision do it with swept test
+            Vector3f movement = new Vector3f(velocity).mul(dt);
+            board.checkCollisionSwept(this, movement, dt);
+        }
     }
 
     @Override
-    public void onCollision(GameObject other) {
-        //this one is a bit tricky, because we want to calculate an appropriate normal force to apply
-        //in order to stop colliding
-        //i think you will find dot products very useful here
-        /*
-         * DOT PRODUCTS TUTORIAL
-         * =====================
-         * given 2 vectors v and u,
-         * v • u = v.x * u.x + v.y * u.y + v.z * u.z
-         * geometric definition:
-         * v • u = v.length() * u.length() * cos(θ), where θ is the angle between the vectors
-         *
-         * so in other words, the dot product is proportional to the amount which one vector points
-         * to another vector because of the cos(θ)
-         * EXAMPLE:
-         * ===========
-         * if θ is very small (i.e the 2 vectors point in the same direction) cos(θ) ≈ 1
-         * if θ is close to 90 degrees, (i.e the 2 vectors are perpendicular, cos(θ) ≈ 0
-         * if θ is close to 180 degrees, (i.e the 2 vectors are facing opposite to each other) cos(θ) ≈ -1
-         *
-         * so the idea is simple: calculate the dot product between the direction from the center of this object
-         * to the center of other (normalized)
-         * and the net acceleration on this object (normalized)
-         * then multiply the net acceleration by this number to get the normal force applied
-         *
-         * in other words,
-         *
-         * let v = this.position() - other.position()
-         * let u = this.acceleration
-         * let d = v • u
-         * this.acceleration.multiply(d)
-         * */
-        Vector3f v =new Vector3f();
-        v=this.getPosition().sub(other.getPosition());
-        Vector3f u=this.acceleration;
-        float d=v.dot(u);
-        this.acceleration.mul(d);
+    public void onCollision(GameObject other, float dt) {
+        BoundingBox myBox = this.getCollision();
+        BoundingBox otherBox = other.getCollision();
+
+        // Calculate overlap on each axis
+        float overlapX = (myBox.w / 2 + otherBox.w / 2) - Math.abs(myBox.getCenter().x - otherBox.getCenter().x);
+        float overlapY = (myBox.h / 2 + otherBox.h / 2) - Math.abs(myBox.getCenter().y - otherBox.getCenter().y);
+        float overlapZ = (myBox.d / 2 + otherBox.d / 2) - Math.abs(myBox.getCenter().z - otherBox.getCenter().z);
+
+        // Resolve along the axis of least penetration
+        if (overlapX < overlapY && overlapX < overlapZ) {
+            // Push out along X
+            float sign = myBox.getCenter().x > otherBox.getCenter().x ? 1 : -1;
+            this.addPosition(new Vector3f(sign * overlapX, 0, 0));
+            this.velocity.x *= -damp;
+
+        } else if (overlapY < overlapX && overlapY < overlapZ) {
+            // Push out along Y
+            float sign = myBox.getCenter().y > otherBox.getCenter().y ? 1 : -1;
+            this.addPosition(new Vector3f(0, sign * overlapY, 0));
+            this.velocity.y *= -damp;
+
+        } else {
+            // Push out along Z (most common — floor/ceiling)
+            float sign = myBox.getCenter().z > otherBox.getCenter().z ? 1 : -1;
+            this.addPosition(new Vector3f(0, 0, sign * overlapZ));
+            this.velocity.z *= -damp;
+
+            // Kill Z velocity if it's tiny (resting contact) to prevent jitter
+            if (Math.abs(this.velocity.z) < 0.05f) {
+                this.velocity.z = 0;
+            }
+        }
     }
 
     public void applyForce(Vector3f force) {

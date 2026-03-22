@@ -6,6 +6,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.io.IOException;
+import java.util.Scanner;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL43.*;
@@ -22,7 +23,7 @@ public class JengaGame {
     private static final boolean[] previous = new boolean[NUMKEYS];
 
 
-    public JengaBoard board = new JengaBoard();
+    public JengaBoard board = null;
 
     public static void keyCallback(long window, int key, int scancode, int action, int mods) {
         keyset[key] = action == GLFW_PRESS;
@@ -56,15 +57,13 @@ public class JengaGame {
 
     public void run() throws IOException {
 
-        Matrix4f norm = new Matrix4f();
+        this.board = new JengaBoard();
 
-        Model m = new Model(
-            VertexBuffer.makeCube(1)
-        );
-        m.transform.scale(new Vector3f(1, 2, 1));
-
+        Scanner in = new Scanner(System.in);
 
         FreeCam camera = new FreeCam();
+        camera.moveForward(-5);
+        camera.speed = 10;
 
         ShaderProgram program = new ShaderProgram(
                 Shader.fromFile(GL_VERTEX_SHADER, "src/main/resources/main.vert"),
@@ -76,7 +75,6 @@ public class JengaGame {
         //uniform mat4 mat_projection;
 
         int model_l = program.getUniformLoc("mat_model");
-        int normal_l = program.getUniformLoc("mat_normal");
         int view_l = program.getUniformLoc("mat_view");
         int projection_l = program.getUniformLoc("mat_projection");
         StopWatch sw = new StopWatch();
@@ -90,16 +88,32 @@ public class JengaGame {
             float dt = sw.secondsF();
             sw.reset();
 
+            camera.update(dt);
+
+            if (isDown(GLFW_KEY_ENTER)) {
+                dt *= 0.01f;
+            }
+
+            if (isPressed(GLFW_KEY_G)) {
+                float x = in.nextFloat();
+                float y = in.nextFloat();
+                float z = in.nextFloat();
+
+                camera.setPos(x, y, z);
+            }
+
+            board.update(dt);
+
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
             program.use();
-            program.setUniformMatrix(model_l, m.getMatrix());
+
             program.setUniformMatrix(view_l, camera.getView());
             program.setUniformMatrix(projection_l, camera.getProjection());
+            board.draw(program, model_l);
 
-            m.draw();
-            camera.update(dt);
+
 
             //display the new frame and poll events
             glfwSwapBuffers(window);

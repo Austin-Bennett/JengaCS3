@@ -47,4 +47,13 @@ public class Model extends Destructible {
         glDeleteBuffers(EBO);
         glDeleteVertexArrays(VAO);
     }
+
+    public Model clone() {
+        //only clones transform
+        var res = new Model(vertices);
+
+        res.transform.copy(transform);
+
+        return res;
+    }
 }

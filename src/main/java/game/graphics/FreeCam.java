@@ -24,10 +24,12 @@ public class FreeCam extends PerspectiveCamera {
         }
 
         if (JengaGame.isDown(GLFW_KEY_LEFT_CONTROL)) {
-            this.moveUp(-speed * dt);
+            this.position.z += -speed * dt;
+            dirty = true;
         }
         if (JengaGame.isDown(GLFW_KEY_SPACE)) {
-            this.moveUp(speed * dt);
+            this.position.z += speed * dt;
+            dirty = true;
         }
 
         if (JengaGame.isDown(GLFW_KEY_UP)) {

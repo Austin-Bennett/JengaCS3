@@ -27,18 +27,25 @@ public abstract class GameObject {
         model.draw();
     }
 
-    public void addPosition(Vector3f amt) {
-        collision.addPos(amt);
-        model.transform.translate(amt);
+    public final void addPosition(Vector3f amt) {
+        this.addPosition(amt.x, amt.y, amt.z);
     }
 
+    public void addPosition(float x, float y, float z) {
+        collision.addPos(x, y, z);
+        model.transform.translate(x, y, z);
+    }
 
+    //DO NOT EDIT TRANSLATION THIS WAY
+    public Transform getTransform() {
+        return model.transform;
+    }
 
     public boolean isColliding(BoundingBox box) {
         return box.intersects(this.collision);
     }
 
-    public abstract void onCollision(GameObject other);
+    public abstract void onCollision(GameObject other, float dt);
 
     public Vector3f getPosition() {
         return collision.getCenter();
@@ -47,4 +54,6 @@ public abstract class GameObject {
     public BoundingBox getCollision() {
         return collision;
     }
+
+    public abstract GameObject clone();
 }
