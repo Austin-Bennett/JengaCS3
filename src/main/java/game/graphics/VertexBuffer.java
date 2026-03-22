@@ -2,6 +2,8 @@ package game.graphics;
 
 import game.utils.ArrayUtils;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.assimp.*;
+import static org.lwjgl.assimp.Assimp.*;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -19,7 +21,7 @@ public class VertexBuffer {
     * */
     private FloatBuffer vertex_data;
     private IntBuffer index_data;
-    public static int VERTEX_SIZE = 5;
+    public static int VERTEX_SIZE = 8;
 
 
     public VertexBuffer(FloatBuffer buffer) {
@@ -36,44 +38,67 @@ public class VertexBuffer {
         index_data.flip();
     }
 
+    public static VertexBuffer loadObj(String path) {
+        AIScene scene = aiImportFile(path,
+                aiProcess_Triangulate       |  // auto-triangulate quads/ngons
+                        aiProcess_GenSmoothNormals  |  // generate normals if missing
+                        aiProcess_FlipUVs           |  // OpenGL expects Y-flipped UVs
+                        aiProcess_JoinIdenticalVertices
+        );
 
-    public static VertexBuffer makeCube(float radius) {
-        ArrayUtils.ArrayWrapper<float[]> vertex_data = ArrayUtils.wrap(new float[0]);
+        if (scene == null || (scene.mFlags() & AI_SCENE_FLAGS_INCOMPLETE) != 0) {
+            throw new RuntimeException("Assimp failed to load: " + aiGetErrorString());
+        }
 
-        //add each face
-        ArrayUtils.appendAll(vertex_data, new float[]{ -radius, radius, radius, 0, 0 });  //front top left       0
-        ArrayUtils.appendAll(vertex_data, new float[]{ radius, radius, radius, 1, 0 });   //front top right      1
-        ArrayUtils.appendAll(vertex_data, new float[]{ -radius, radius, -radius, 0, 1 }); //front bottom left    2
-        ArrayUtils.appendAll(vertex_data, new float[]{ radius, radius, -radius, 1, 1 });  //front bottom right   3
+        // Just grab the first mesh for a simple loader
+        AIMesh mesh = AIMesh.create(scene.mMeshes().get(0));
 
-        ArrayUtils.appendAll(vertex_data, new float[]{ -radius, -radius, radius, 0, 0 }); //back top left        4
-        ArrayUtils.appendAll(vertex_data, new float[]{ radius, -radius, radius, 1, 0 });  //back top right       5
-        ArrayUtils.appendAll(vertex_data, new float[]{ -radius, -radius, -radius, 0, 1 });//back bottom left     6
-        ArrayUtils.appendAll(vertex_data, new float[]{ radius, -radius, -radius, 1, 1 }); //back bottom right    7
+        int vertexCount = mesh.mNumVertices();
+        float[] vertices = new float[vertexCount * VERTEX_SIZE];
 
+        AIVector3D.Buffer positions = mesh.mVertices();
+        AIVector3D.Buffer normals   = mesh.mNormals();
+        AIVector3D.Buffer uvs       = mesh.mTextureCoords(0); // channel 0
 
-        int[] indices = {
-                0, 1, 2, //face 1
-                1, 2, 3,
+        for (int i = 0; i < vertexCount; i++) {
+            int offset = i * VERTEX_SIZE;
 
-                4, 5, 6, //face 2
-                5, 6, 7,
+            AIVector3D pos = positions.get(i);
+            vertices[offset]     = pos.x();
+            vertices[offset + 1] = pos.y();
+            vertices[offset + 2] = pos.z();
 
-                0, 4, 2, //face 3
-                4, 2, 6,
+            if (normals != null) {
+                AIVector3D n = normals.get(i);
+                vertices[offset + 3] = n.x();
+                vertices[offset + 4] = n.y();
+                vertices[offset + 5] = n.z();
+            }
 
-                4, 5, 0,
-                5, 0, 1, //face 4
+            if (uvs != null) {
+                AIVector3D uv = uvs.get(i);
+                vertices[offset + 6] = uv.x();
+                vertices[offset + 7] = uv.y();
+            }
+        }
 
-                5, 1, 3,
-                5, 3, 7,
+        // Unpack face indices
+        int faceCount = mesh.mNumFaces();
+        int[] indices = new int[faceCount * 3];
+        AIFace.Buffer faces = mesh.mFaces();
 
-                7, 6, 3,
-                3, 6, 2,
-        };
+        for (int i = 0; i < faceCount; i++) {
+            AIFace face = faces.get(i);
+            indices[i * 3]     = face.mIndices().get(0);
+            indices[i * 3 + 1] = face.mIndices().get(1);
+            indices[i * 3 + 2] = face.mIndices().get(2);
+        }
 
-        return new VertexBuffer(ArrayUtils.unwrap(vertex_data), indices);
+        aiReleaseImport(scene); // free native memory
+
+        return new VertexBuffer(vertices, indices);
     }
+
 
     public FloatBuffer getBuffer() {
         return vertex_data;
@@ -89,8 +114,10 @@ public class VertexBuffer {
 
     public static void setVertexAttributes() {
         glVertexAttribPointer(0, 3, GL_FLOAT, false, Float.BYTES * VERTEX_SIZE, 0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, false, Float.BYTES * VERTEX_SIZE, 3 * Float.BYTES);
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, Float.BYTES * VERTEX_SIZE, 3 * Float.BYTES);
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, Float.BYTES * VERTEX_SIZE, 6 * Float.BYTES);
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
     }
 }

@@ -15,4 +15,5 @@ repositories {
 dependencies {
     // This replaces the need for the manual JAR file
     implementation fileTree(dir: 'lib', include: ['*.jar'])
+    implementation 'org.ode4j:core:0.5.4'
 }

@@ -1,102 +1,79 @@
 package physics;
 
 import game.GameObject;
-import game.graphics.Model;
-import game.utils.BoundingBox;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import game.graphics.ShaderProgram;
+import game.utils.BoxCollider;
+import org.ode4j.math.DQuaternion;
+import org.ode4j.math.DQuaternionC;
+import org.ode4j.math.DVector3C;
+import org.ode4j.ode.*;
 
-
-//brian do all this
 public abstract class PhysicsObject extends GameObject {
 
-    float mass;
-    Vector3f velocity;
-    Vector3f acceleration;
+    public BoxCollider collider; // still used for rendering
+    protected DBody body;
+    protected DGeom geom;
 
-    public boolean simulate_physics = true;
+    public PhysicsObject(PhysicsBoard board, float w, float h, float d, float mass) {
+        // Create the rigid body
+        body = OdeHelper.createBody(board.getWorld());
 
-    public float g = -9.8f;
+        // Set mass — ode4j computes the inertia tensor for you
+        DMass m = OdeHelper.createMass();
+        m.setBox(1.0, w, d, h); // density=1, it scales to correct mass
+        m.adjust(mass);
+        body.setMass(m);
 
-    public float damp = 0.9f;
+        // Create box collision geometry and attach to body
+        geom = OdeHelper.createBox(board.getSpace(), w, d, h);
+        geom.setBody(body);
 
-    public PhysicsObject(BoundingBox collision, float mass, Model m) {
-        super(collision, m);
-        velocity = new Vector3f();
-        acceleration = new Vector3f();
-        this.mass = mass;
+        // Keep your Transform in sync for rendering
+        collider = new BoxCollider(w, h, d);
     }
 
-
-    public PhysicsObject(BoundingBox collision, float mass, Vector3f velocity, Vector3f acceleration, Model m) {
-        super(collision, m);
-
-        this.velocity = velocity;
-        this.acceleration = acceleration;
-        this.mass = mass;
+    public void setPosition(float x, float y, float z) {
+        body.setPosition(x, y, z);
     }
 
+    public void setRotation(float x, float y, float z) {
+        // ode4j uses quaternions internally
+        DQuaternion q = new DQuaternion();
+        OdeMath.dQFromAxisAndAngle(q, 0, 0, 1, z);
+        body.setQuaternion(q);
+    }
 
-    public void updatePhysics(double deltaTime) {
-        float dt = (float) deltaTime;
+    public void setStatic(boolean isStatic) {
+        if (isStatic) body.setKinematic(); // won't be affected by forces
+        else          body.setDynamic();
+    }
 
-        if (this.simulate_physics) {
-            this.acceleration.z += g;
-            this.velocity.add(acceleration.x * dt, acceleration.y * dt, acceleration.z * dt);
-            acceleration.set(0);
+    // Call this every frame AFTER stepPhysics() to sync the render transform
+    public void syncTransform() {
+        DVector3C pos = body.getPosition();
+        DQuaternionC q = body.getQuaternion();
 
-            // Don't move yet — let checkCollision do it with swept test
-            Vector3f movement = new Vector3f(velocity).mul(dt);
-            board.checkCollisionSwept(this, movement, dt);
-        }
+        collider.transform.setTranslation((float) pos.get0(), (float) pos.get1(), (float) pos.get2());
+        collider.transform.setRotation(new org.joml.Quaternionf(
+                (float) q.get1(), (float) q.get2(), (float) q.get3(), (float) q.get0()
+        ));
+    }
+
+    public void applyImpulse(float x, float y, float z) {
+        body.addForce(x, y, z);
+    }
+
+    public void applyImpulseAtPoint(
+            float fx, float fy, float fz,
+            float px, float py, float pz) {
+        body.addForceAtPos(fx, fy, fz, px, py, pz);
     }
 
     @Override
-    public void onCollision(GameObject other, float dt) {
-        BoundingBox myBox = this.getCollision();
-        BoundingBox otherBox = other.getCollision();
-
-        // Calculate overlap on each axis
-        float overlapX = (myBox.w / 2 + otherBox.w / 2) - Math.abs(myBox.getCenter().x - otherBox.getCenter().x);
-        float overlapY = (myBox.h / 2 + otherBox.h / 2) - Math.abs(myBox.getCenter().y - otherBox.getCenter().y);
-        float overlapZ = (myBox.d / 2 + otherBox.d / 2) - Math.abs(myBox.getCenter().z - otherBox.getCenter().z);
-
-        // Resolve along the axis of least penetration
-        if (overlapX < overlapY && overlapX < overlapZ) {
-            // Push out along X
-            float sign = myBox.getCenter().x > otherBox.getCenter().x ? 1 : -1;
-            this.addPosition(new Vector3f(sign * overlapX, 0, 0));
-            this.velocity.x *= -damp;
-
-        } else if (overlapY < overlapX && overlapY < overlapZ) {
-            // Push out along Y
-            float sign = myBox.getCenter().y > otherBox.getCenter().y ? 1 : -1;
-            this.addPosition(new Vector3f(0, sign * overlapY, 0));
-            this.velocity.y *= -damp;
-
-        } else {
-            // Push out along Z (most common — floor/ceiling)
-            float sign = myBox.getCenter().z > otherBox.getCenter().z ? 1 : -1;
-            this.addPosition(new Vector3f(0, 0, sign * overlapZ));
-            this.velocity.z *= -damp;
-
-            // Kill Z velocity if it's tiny (resting contact) to prevent jitter
-            if (Math.abs(this.velocity.z) < 0.05f) {
-                this.velocity.z = 0;
-            }
-        }
-    }
-
-    public void applyForce(Vector3f force) {
-        //use F = Ma to calculate applied acceleration
-        this.addAcceleration(force.div(this.mass));
-    }
-
-    public void addVelocity(Vector3f v) {
-        this.velocity.add(v);
-    }
-
-    public void addAcceleration(Vector3f a) {
-        this.acceleration.add(a);
+    public void draw(ShaderProgram shader, int mat_model_loc, int mat_normal_loc) {
+        syncTransform();
+        shader.setUniformMatrix4(mat_model_loc, collider.transform.getMatrix());
+        shader.setUniformMatrix3(mat_normal_loc, collider.transform.getNormalMatrix());
+        collider.vertices.draw();
     }
 }

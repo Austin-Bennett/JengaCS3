@@ -231,17 +231,7 @@ public final class BoundingBox implements Cloneable {
                 flteq(d, obj.y);
     }
 
-    public Model intoBox() {
 
-        var res = new Model(
-                VertexBuffer.makeCube(1)
-        );
-
-        res.transform
-                .translate(x, y, z);
-        res.transform.scale(new Vector3f(w / 2, d / 2, h / 2));
-        return res;
-    }
 
     @Override
     public String toString() {

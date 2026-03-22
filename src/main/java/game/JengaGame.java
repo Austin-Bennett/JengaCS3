@@ -2,8 +2,6 @@ package game;
 
 import game.graphics.*;
 import game.utils.StopWatch;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -26,6 +24,8 @@ public class JengaGame {
     public JengaBoard board = null;
 
     public static void keyCallback(long window, int key, int scancode, int action, int mods) {
+        //ignore GLFW_REPEAT
+        if (action == GLFW_REPEAT) return;
         keyset[key] = action == GLFW_PRESS;
     }
 
@@ -75,6 +75,7 @@ public class JengaGame {
         //uniform mat4 mat_projection;
 
         int model_l = program.getUniformLoc("mat_model");
+        int normal_l = program.getUniformLoc("mat_normal");
         int view_l = program.getUniformLoc("mat_view");
         int projection_l = program.getUniformLoc("mat_projection");
         StopWatch sw = new StopWatch();
@@ -90,28 +91,23 @@ public class JengaGame {
 
             camera.update(dt);
 
-            if (isDown(GLFW_KEY_ENTER)) {
+            if (isDown(GLFW_KEY_G)) {
                 dt *= 0.01f;
             }
 
-            if (isPressed(GLFW_KEY_G)) {
-                float x = in.nextFloat();
-                float y = in.nextFloat();
-                float z = in.nextFloat();
-
-                camera.setPos(x, y, z);
-            }
-
             board.update(dt);
+
+
+
 
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
             program.use();
 
-            program.setUniformMatrix(view_l, camera.getView());
-            program.setUniformMatrix(projection_l, camera.getProjection());
-            board.draw(program, model_l);
+            program.setUniformMatrix4(view_l, camera.getView());
+            program.setUniformMatrix4(projection_l, camera.getProjection());
+            board.draw(program, model_l, normal_l);
 
 
 

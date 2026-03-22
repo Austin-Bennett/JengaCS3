@@ -8,7 +8,6 @@ import static org.lwjgl.opengl.GL43.*;
 
 public class Model extends Destructible {
 
-    public Transform transform = new Transform();
     private VertexBuffer vertices;
     private int VBO;
     private int EBO;
@@ -37,9 +36,6 @@ public class Model extends Destructible {
         glDrawElements(GL_TRIANGLES, vertices.indicesLength(), GL_UNSIGNED_INT, 0);
     }
 
-    public Matrix4f getMatrix() {
-        return transform.getMatrix();
-    }
 
     @Override
     public void destruct() {
@@ -51,8 +47,6 @@ public class Model extends Destructible {
     public Model clone() {
         //only clones transform
         var res = new Model(vertices);
-
-        res.transform.copy(transform);
 
         return res;
     }
