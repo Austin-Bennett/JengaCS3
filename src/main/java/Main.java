@@ -61,6 +61,10 @@ public class Main {
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(game.window, JengaGame::keyCallback);
+        glfwSetWindowSizeCallback(game.window, JengaGame::windowSizeCallback);
+        glfwSetMouseButtonCallback(game.window, JengaGame::mouseButtonCallback);
+        glfwSetCursorPosCallback  (game.window, JengaGame::cursorPosCallback);
+        glfwSetScrollCallback     (game.window, JengaGame::scrollCallback);
 
         // Get the thread stack and push a new frame
         try ( MemoryStack stack = stackPush() ) {

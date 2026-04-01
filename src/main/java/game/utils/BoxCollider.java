@@ -11,9 +11,13 @@ import org.joml.Vector3f;
 //also represents a box mesh for simplicity
 public class BoxCollider {
     public Transform transform;
-    public final Model vertices = new Model(VertexBuffer.loadObj("src/main/resources/models/cube.obj"));
 
 
+    public Model vertices = new Model(VertexBuffer.loadObj("src/main/resources/models/cube.obj"));
+
+    public void setVertices(Model m) {
+        this.vertices = m;
+    }
 
     public BoxCollider(float w, float h, float d) {
 
@@ -59,15 +63,15 @@ public class BoxCollider {
     }
 
     public float x() {
-        return transform.getTranslation().x;
+        return transform.translation().x;
     }
 
     public float y() {
-        return transform.getTranslation().y;
+        return transform.translation().y;
     }
 
     public float z() {
-        return transform.getTranslation().z;
+        return transform.translation().z;
     }
 
 
@@ -232,4 +236,64 @@ public class BoxCollider {
                 ? sum.div(count)
                 : new Vector3f(getCenter()).add(other.getCenter()).div(2f);
     }
+
+
+    public float raycast(Vector3f origin, Vector3f direction) {
+        Transform tr = this.transform;
+
+        // Inverse rotation: for a unit quaternion, conjugate == inverse.
+        Quaternionf invRot = tr.getRotation().conjugate();
+
+        // Transform ray origin into box local space:
+        //   localOrigin = invRot * (origin - boxCenter) / boxScale
+        Vector3f localOrigin = invRot.transform(
+                new Vector3f(origin).sub(tr.getTranslation()));
+        localOrigin.div(tr.getScale());
+
+        // Transform ray direction into box local space:
+        //   localDir = invRot * direction / boxScale
+        // Dividing by scale keeps t consistent with the world-space ray.
+        Vector3f localDir = invRot.transform(new Vector3f(direction));
+        localDir.div(tr.getScale());
+
+        // Slab test against the local AABB [-0.5, +0.5]^3
+        float tMin = Float.NEGATIVE_INFINITY;
+        float tMax = Float.POSITIVE_INFINITY;
+
+        float[] o = { localOrigin.x, localOrigin.y, localOrigin.z };
+        float[] d = { localDir.x,    localDir.y,    localDir.z    };
+
+        for (int i = 0; i < 3; i++) {
+            if (Math.abs(d[i]) < 1e-8f) {
+                // Ray is parallel to this slab pair — miss if outside
+                if (o[i] < -0.5f || o[i] > 0.5f) return -1f;
+            } else {
+                float t1 = (-0.5f - o[i]) / d[i];
+                float t2 = ( 0.5f - o[i]) / d[i];
+
+                if (t1 > t2) { float tmp = t1; t1 = t2; t2 = tmp; }
+
+                tMin = Math.max(tMin, t1);
+                tMax = Math.min(tMax, t2);
+
+                if (tMin > tMax) return -1f; // slabs don't overlap
+            }
+        }
+
+        // Whole interval is behind the ray origin
+        if (tMax < 0f) return -1f;
+
+        // Return the first t that is in front of the ray
+        return tMin >= 0f ? tMin : tMax;
+    }
+
+    /**
+     * Convenience: returns the intersection point in world space, or null on miss.
+     */
+    public Vector3f raycastPoint(Vector3f origin, Vector3f direction) {
+        float t = raycast(origin, direction);
+        if (t < 0f) return null;
+        return new Vector3f(direction).mul(t).add(origin);
+    }
 }
+

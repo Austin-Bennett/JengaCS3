@@ -121,5 +121,5 @@ public abstract class Camera {
 
     public abstract Matrix4f getProjection();
 
-
+    public abstract void onResize(int w, int h);
 }

@@ -10,7 +10,7 @@ public class PhysicsBoard {
     private DJointGroup contactGroup;
 
     // Contact surface parameters — tune these
-    private static final double FRICTION    = 0.8;
+    private static final double FRICTION    = 2;
     private static final double BOUNCE      = 0.0;
     private static final double ERP         = 0.2; // error reduction (like baumgarte)
     private static final double CFM         = 1e-5; // constraint force mixing (softness)
@@ -28,12 +28,6 @@ public class PhysicsBoard {
         // These two are key for stable stacking
         world.setERP(ERP);
         world.setCFM(CFM);
-
-        // Auto-disable bodies that come to rest — great for Jenga
-        world.setAutoDisableFlag(true);
-        world.setAutoDisableLinearThreshold(0.01);
-        world.setAutoDisableAngularThreshold(0.01);
-        world.setAutoDisableSteps(10);
     }
 
     // Called every frame

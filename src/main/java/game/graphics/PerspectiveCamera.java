@@ -26,4 +26,10 @@ public class PerspectiveCamera extends Camera {
     public Matrix4f getProjection() {
         return proj;
     }
+
+    @Override
+    public void onResize(int w, int h) {
+        aspect = (float) w / (float) h;
+        updatePerspective();
+    }
 }

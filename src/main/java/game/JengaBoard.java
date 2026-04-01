@@ -2,6 +2,7 @@ package game;
 
 import game.graphics.ShaderProgram;
 import game.utils.BoxCollider;
+import game.utils.RayHitInfo;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import physics.PhysicsBoard;
@@ -12,14 +13,12 @@ import java.util.ArrayList;
 public class JengaBoard extends PhysicsBoard {
 
     public class BoardHit {
-        public boolean hit;
         public float dist;
         public Vector3f hit_pos;
-        public GameObject object;
+        public PhysicsObject object;
 
 
-        public BoardHit(boolean hit, float dist, Vector3f hit_pos, GameObject o) {
-            this.hit = hit;
+        public BoardHit(float dist, Vector3f hit_pos, PhysicsObject o) {
             this.dist = dist;
             this.hit_pos = hit_pos;
             this.object = o;
@@ -43,8 +42,8 @@ public class JengaBoard extends PhysicsBoard {
         addObject(floor);
 
 // Tower
-        float z_offset = 0.1f;
-        float gap  = 0.05f;
+        float z_offset = 0.f;
+        float gap  = 0.0f;
         float step = 1.0f + gap;
 
         for (int layer = 0; layer < 18; layer++) {
@@ -102,8 +101,29 @@ public class JengaBoard extends PhysicsBoard {
             p = objects.get(i);
             p.update(deltaTime);
         }
+    }
 
+    public BoardHit raycast(Vector3f start, Vector3f dir) {
+        Vector3f res = null;
+        PhysicsObject min = null;
 
+        for (int i = 0; i < objects.size(); i++) {
+            if (!(objects.get(i) instanceof PhysicsObject po)) {
+                continue;
+            }
+            var hitmewithyourbestshot = po.collider.raycastPoint(start, dir);
+            if (hitmewithyourbestshot == null) continue;
+            if (res == null || start.distanceSquared(hitmewithyourbestshot) < start.distanceSquared(res)) {
+                res = hitmewithyourbestshot;
+                min = po;
+            }
+        }
+
+        if (res == null) return null;
+
+        float dist = start.distance(res);
+
+        return new BoardHit(dist, res, min);
     }
 
     //parker

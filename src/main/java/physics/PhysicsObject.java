@@ -3,6 +3,11 @@ package physics;
 import game.GameObject;
 import game.graphics.ShaderProgram;
 import game.utils.BoxCollider;
+import org.joml.Matrix3d;
+import org.joml.Matrix3f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.ode4j.math.DMatrix3;
 import org.ode4j.math.DQuaternion;
 import org.ode4j.math.DQuaternionC;
 import org.ode4j.math.DVector3C;
@@ -11,8 +16,10 @@ import org.ode4j.ode.*;
 public abstract class PhysicsObject extends GameObject {
 
     public BoxCollider collider; // still used for rendering
-    protected DBody body;
-    protected DGeom geom;
+    public DBody body;
+    public DGeom geom;
+
+
 
     public PhysicsObject(PhysicsBoard board, float w, float h, float d, float mass) {
         // Create the rigid body
@@ -23,6 +30,7 @@ public abstract class PhysicsObject extends GameObject {
         m.setBox(1.0, w, d, h); // density=1, it scales to correct mass
         m.adjust(mass);
         body.setMass(m);
+
 
         // Create box collision geometry and attach to body
         geom = OdeHelper.createBox(board.getSpace(), w, d, h);
@@ -57,6 +65,26 @@ public abstract class PhysicsObject extends GameObject {
         collider.transform.setRotation(new org.joml.Quaternionf(
                 (float) q.get1(), (float) q.get2(), (float) q.get3(), (float) q.get0()
         ));
+    }
+
+
+    private Matrix3d helper_mat = new Matrix3d();
+    public void syncRotationWithPhysics() {
+        Matrix3d rot = collider.transform.getRotation().get(helper_mat);
+
+        // ODE4J DMatrix3 needs 9 elements (3x3), not 16.
+        // JOML's get(Matrix3f) or extracting components is safer.
+        DMatrix3 odeMat = new DMatrix3(
+                rot.m00(), rot.m01(), rot.m02(),
+                rot.m10(), rot.m11(), rot.m12(),
+                rot.m20(), rot.m21(), rot.m22()
+        );
+
+        body.setRotation(odeMat);
+
+        // IMPORTANT: If you manually set rotation, kill the angular velocity
+        // so it doesn't keep spinning from old physics forces.
+        body.setAngularVel(0, 0, 0);
     }
 
     public void applyImpulse(float x, float y, float z) {

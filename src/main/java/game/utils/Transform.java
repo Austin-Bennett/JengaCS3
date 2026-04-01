@@ -195,7 +195,7 @@ public class Transform {
 
     /** Rotates around an arbitrary axis by angle (radians). */
     public void rotate(Vector3f axis, float angle) {
-        this.rotation.rotateAxis(angle, axis);
+        this.rotation.premul(new Quaternionf().rotateAxis(angle, axis));
         this.dirty = true;
     }
 
