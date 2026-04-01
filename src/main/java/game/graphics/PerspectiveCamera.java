@@ -1,4 +1,4 @@
-package game.Graphics;
+package game.graphics;
 
 import game.JengaGame;
 import org.joml.Matrix4f;
@@ -25,5 +25,11 @@ public class PerspectiveCamera extends Camera {
     @Override
     public Matrix4f getProjection() {
         return proj;
+    }
+
+    @Override
+    public void onResize(int w, int h) {
+        aspect = (float) w / (float) h;
+        updatePerspective();
     }
 }

@@ -1,5 +1,7 @@
 package game.utils;
 
+import game.graphics.Model;
+import game.graphics.VertexBuffer;
 import org.joml.Vector3f;
 
 import static game.utils.FloatUtils.flteq;
@@ -12,7 +14,12 @@ import static game.utils.FloatUtils.flteq;
 * */
 public final class BoundingBox implements Cloneable {
     //x, y, z, width, height, depth
-    float x = 0, y = 0, z = 0, w = 0, h = 0, d = 0;
+    public float x = 0;
+    public float y = 0;
+    public float z = 0;
+    public float w = 0;
+    public float h = 0;
+    public float d = 0;
 
     public BoundingBox() {}
 
@@ -71,7 +78,17 @@ public final class BoundingBox implements Cloneable {
         return z + d;
     }
 
+    public BoundingBox expandedByMovement(Vector3f movement) {
+        float newX = movement.x < 0 ? x + movement.x : x;
+        float newY = movement.y < 0 ? y + movement.y : y;
+        float newZ = movement.z < 0 ? z + movement.z : z;
 
+        float newW = w + Math.abs(movement.x);
+        float newH = h + Math.abs(movement.y);
+        float newD = d + Math.abs(movement.z);
+
+        return new BoundingBox(newX, newY, newZ, newW, newH, newD);
+    }
 
     //creates a new bounding box with the new position
     public BoundingBox withPosition(Vector3f pos) {
@@ -124,6 +141,14 @@ public final class BoundingBox implements Cloneable {
         this.x += pos.x;
         this.y += pos.y;
         this.z += pos.z;
+
+        return this;
+    }
+
+    public BoundingBox addPos(float x, float y, float z) {
+        this.x += x;
+        this.y += y;
+        this.z += z;
 
         return this;
     }
@@ -205,6 +230,8 @@ public final class BoundingBox implements Cloneable {
                 flteq(h, obj.y) &&
                 flteq(d, obj.y);
     }
+
+
 
     @Override
     public String toString() {

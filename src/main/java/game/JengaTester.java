@@ -2,11 +2,6 @@ package game;
 
 import game.utils.BoundingBox;
 import org.joml.Vector3f;
-import physics.PhysicsObject;
-
-import java.util.Comparator;
-
-import static game.utils.FloatUtils.flteq;
 
 public class JengaTester {
 

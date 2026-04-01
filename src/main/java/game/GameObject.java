@@ -1,37 +1,23 @@
 package game;
 
+import game.graphics.Model;
+import game.graphics.ShaderProgram;
 import game.utils.BoundingBox;
+import game.utils.Transform;
 import org.joml.Vector3f;
 
 
 //position is the center of the object
 public abstract class GameObject {
-    protected BoundingBox collision;
     protected JengaBoard board;
 
 
-    public GameObject(BoundingBox collision) {
-        this.collision = collision;
-    }
+    public GameObject()
+    {}
 
     public abstract void update(double deltaTime);
 
+    public abstract void draw(ShaderProgram shader, int mat_model_loc, int mat_normal_loc);
 
-    public void addPosition(Vector3f amt) {
-        collision.addPos(amt);
-    }
-
-    public boolean isColliding(BoundingBox box) {
-        return true;
-    }
-
-    public abstract void onCollision(GameObject other);
-
-    public Vector3f getPosition() {
-        return collision.getCenter();
-    }
-
-    public BoundingBox getCollision() {
-        return collision;
-    }
+    public abstract GameObject clone();
 }

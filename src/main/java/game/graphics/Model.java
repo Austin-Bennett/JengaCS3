@@ -1,14 +1,13 @@
-package game.Graphics;
+package game.graphics;
 
 import game.utils.Destructible;
+import game.utils.Transform;
 import org.joml.Matrix4f;
 
-import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL43.*;
 
 public class Model extends Destructible {
 
-    private Matrix4f model = new Matrix4f().identity();
     private VertexBuffer vertices;
     private int VBO;
     private int EBO;
@@ -37,14 +36,18 @@ public class Model extends Destructible {
         glDrawElements(GL_TRIANGLES, vertices.indicesLength(), GL_UNSIGNED_INT, 0);
     }
 
-    public Matrix4f getMatrix() {
-        return model;
-    }
 
     @Override
     public void destruct() {
         glDeleteBuffers(VBO);
         glDeleteBuffers(EBO);
         glDeleteVertexArrays(VAO);
+    }
+
+    public Model clone() {
+        //only clones transform
+        var res = new Model(vertices);
+
+        return res;
     }
 }

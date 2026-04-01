@@ -1,4 +1,4 @@
-package game.Graphics;
+package game.graphics;
 
 import game.utils.FloatUtils;
 import org.joml.Matrix4f;
@@ -28,6 +28,7 @@ public abstract class Camera {
                 .rotateZ(yaw);
     }
 
+
     public Vector3f right() {
         return new Vector3f(WORLD_FORWARD)
                 .rotateZ(yaw - FloatUtils.PI_2);
@@ -39,7 +40,10 @@ public abstract class Camera {
                 .rotateX(pitch + FloatUtils.PI_2);
     }
 
-
+    public void setPos(float x, float y, float z) {
+        this.position.set(x, y, z);
+        this.dirty = true;
+    }
 
     public void moveForward(float amt) {
         this.position.add(this.forward().mul(amt));
@@ -117,5 +121,5 @@ public abstract class Camera {
 
     public abstract Matrix4f getProjection();
 
-
+    public abstract void onResize(int w, int h);
 }

@@ -1,11 +1,10 @@
-package game.Graphics;
+package game.graphics;
 
 import game.utils.Destructible;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL43.*;
 
 public class Shader extends Destructible implements GLObject {

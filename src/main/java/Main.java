@@ -1,6 +1,7 @@
 import game.JengaGame;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.*;
 
 import java.io.IOException;
@@ -60,6 +61,10 @@ public class Main {
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(game.window, JengaGame::keyCallback);
+        glfwSetWindowSizeCallback(game.window, JengaGame::windowSizeCallback);
+        glfwSetMouseButtonCallback(game.window, JengaGame::mouseButtonCallback);
+        glfwSetCursorPosCallback  (game.window, JengaGame::cursorPosCallback);
+        glfwSetScrollCallback     (game.window, JengaGame::scrollCallback);
 
         // Get the thread stack and push a new frame
         try ( MemoryStack stack = stackPush() ) {
@@ -90,5 +95,7 @@ public class Main {
 
 
         GL.createCapabilities();
+
+        GL43.glEnable(GL43.GL_DEPTH_TEST);
     }
 }

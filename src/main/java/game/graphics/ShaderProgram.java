@@ -1,9 +1,9 @@
-package game.Graphics;
+package game.graphics;
 
 import game.utils.Destructible;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
-import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL43.*;
 
 public class ShaderProgram extends Destructible implements GLObject {
@@ -29,8 +29,12 @@ public class ShaderProgram extends Destructible implements GLObject {
         return glGetUniformLocation(id, name);
     }
 
-    public void setUniformMatrix(int loc, Matrix4f mat) {
+    public void setUniformMatrix4(int loc, Matrix4f mat) {
         glUniformMatrix4fv(loc, false, mat.get(mat4v));
+    }
+
+    public void setUniformMatrix3(int loc, Matrix3f mat) {
+        glUniformMatrix3fv(loc, false, mat.get(mat4v));
     }
 
     public void use() {
